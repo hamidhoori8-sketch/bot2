@@ -1,0 +1,520 @@
+import os
+import re
+from datetime import datetime
+
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ConversationHandler,
+    ContextTypes,
+    filters,
+)
+
+TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+ADMIN_CHAT_ID = int(os.environ["ADMIN_CHAT_ID"])
+
+COUNTER_FILE = os.path.join(os.path.dirname(__file__), "application_counter.txt")
+
+LANG, CHOOSING, ASKING, CONFIRMING = range(4)
+
+BUTTON_BACK = {
+    "en": "Back",
+    "mn": "Буцах",
+}
+
+BUTTON_CANCEL = {
+    "en": "Cancel",
+    "mn": "Цуцлах",
+}
+
+BUTTON_SEND = {
+    "en": "Send application",
+    "mn": "Хүсэлт илгээх",
+}
+
+BUTTON_EDIT = {
+    "en": "Edit",
+    "mn": "Засах",
+}
+
+
+TEXTS = {
+    "en": {
+        "welcome": (
+            "Good day! We are glad to welcome you.\n\n"
+            "Security warning: please do not send your personal data to anyone "
+            "except this bot and the official Telegram account @vzmlbet.\n\n"
+            "Please choose the type of cooperation using the buttons below "
+            "or send a number in the chat:\n\n"
+            "1. Affiliate partnership\n"
+            "2. Cooperation with Bank Transfer\n"
+            "3. Cooperation with TeamCash\n"
+            "4. Other commercial offer"
+        ),
+        "invalid_choice": "Please choose one of the options: 1, 2, 3 or 4.",
+        "selected": "You selected:",
+        "step_intro": "We will ask you a few questions step by step.",
+        "enter": "Please provide:",
+        "send_photo": "Please send a photo:",
+        "need_photo": "Please send a photo, not text.",
+        "invalid_email": "Invalid email format. Please enter a valid email.",
+        "invalid_phone": "Invalid phone format. Please enter digits only.",
+        "invalid_birth": "Invalid date of birth. Please use DD.MM.YYYY format.",
+        "confirm": "Please check your application before sending:",
+        "accepted": "Thank you! Your application has been received.",
+        "official": (
+            "We will contact you from the Telegram account @vzmlbet to conclude cooperation.\n\n"
+            "This is the official account of the Melbet manager for Iran. "
+            "Please do not reply to other suspicious persons to avoid fraud."
+        ),
+        "cancelled": "Application cancelled. Press /start to begin again.",
+        "edited": "Let's fill in the application again.",
+    },
+    "mn": {
+        "welcome": (
+            "روز بخیر! خوشحالیم که به ما پیوستید.\n\n"
+            "هشدار امنیتی: لطفاً اطلاعات شخصی خود را برای هیچ‌کس ارسال نکنید، "
+            "به‌جز این ربات و حساب رسمی تلگرام @vzmlbet.\n\n"
+            "لطفاً نوع همکاری مورد نظر خود را از طریق دکمه‌های زیر انتخاب کنید "
+            "یا عدد مربوطه را در چت ارسال کنید:\n\n"
+            "1. همکاری افیلیت / جذب مشتری\n"
+            "2. همکاری از طریق انتقال بانکی\n"
+            "3. همکاری با TeamCash\n"
+            "4. پیشنهاد تجاری دیگر"
+        ),
+        "invalid_choice": "لطفاً یکی از گزینه‌های 1، 2، 3 یا 4 را انتخاب کنید.",
+        "selected": "شما انتخاب کردید:",
+        "step_intro": "چند سؤال را مرحله به مرحله از شما می‌پرسیم.",
+        "enter": "لطفاً وارد کنید:",
+        "send_photo": "لطفاً عکس را ارسال کنید:",
+        "need_photo": "لطفاً عکس ارسال کنید، نه متن.",
+        "invalid_email": "فرمت ایمیل نامعتبر است. لطفاً ایمیل معتبر وارد کنید.",
+        "invalid_phone": "فرمت شماره تلفن نامعتبر است. لطفاً فقط عدد وارد کنید.",
+        "invalid_birth": "تاریخ تولد نامعتبر است. لطفاً با فرمت DD.MM.YYYY وارد کنید.",
+        "confirm": "لطفاً درخواست خود را قبل از ارسال بررسی کنید:",
+        "accepted": "متشکریم! درخواست شما دریافت شد.",
+        "official": (
+            "برای تکمیل همکاری، از طریق حساب تلگرام @vzmlbet با شما تماس خواهیم گرفت.\n\n"
+            "این حساب رسمی مدیر Melbet برای کشور ایران است. "
+            "لطفاً برای جلوگیری از کلاهبرداری به افراد مشکوک دیگر پاسخ ندهید."
+        ),
+        "cancelled": "درخواست Цуцлах شد. برای شروع دوباره /start را فشار دهید.",
+        "edited": "بیایید درخواست را دوباره تکمیل کنیم.",
+    },
+}
+
+
+OPTIONS = {
+    "en": {
+        "1": "Affiliate partnership",
+        "2": "Cooperation with Bank Transfer",
+        "3": "Cooperation with TeamCash",
+        "4": "Other commercial offer",
+    },
+    "mn": {
+        "1": "همکاری افیلیت / جذب مشتری",
+        "2": "همکاری از طریق انتقال بانکی",
+        "3": "همکاری با TeamCash",
+        "4": "پیشنهاد تجاری دیگر",
+    },
+}
+
+OPTIONS_RU = {
+    "1": "Партнерское сотрудничество / аффилиат",
+    "2": "Сотрудничество с Bank Transfer",
+    "3": "Сотрудничество с TeamCash",
+    "4": "Другое коммерческое предложение",
+}
+
+
+QUESTIONS = {
+    "en": {
+        "1": [
+            {"key": "full_name", "label": "Full name", "ru": "Имя и фамилия", "type": "text"},
+            {"key": "phone", "label": "Phone number", "ru": "Телефон", "type": "phone"},
+            {"key": "email", "label": "Email", "ru": "Почта", "type": "email"},
+            {"key": "traffic", "label": "Traffic channels, if available, for example Telegram channel", "ru": "Каналы трафика", "type": "text"},
+        ],
+        "2": [
+            {"key": "full_name", "label": "Full name", "ru": "Имя и фамилия", "type": "text"},
+            {"key": "phone", "label": "Phone number", "ru": "Телефон", "type": "phone"},
+            {"key": "email", "label": "Email", "ru": "Почта", "type": "email"},
+            {"key": "document_number", "label": "Document number", "ru": "Номер документа", "type": "text"},
+            {"key": "birth_date", "label": "Date of birth, format DD.MM.YYYY", "ru": "Дата рождения", "type": "birth_date"},
+            {"key": "city", "label": "City", "ru": "Город", "type": "text"},
+            {"key": "bank", "label": "Preferred working method / bank", "ru": "Предпочтительный рабочий метод / банк", "type": "text"},
+            {"key": "account_number", "label": "Account number of the working method", "ru": "Номер счёта рабочего метода", "type": "text"},
+            {"key": "document_photo", "label": "Photo of the document", "ru": "Фото документа", "type": "photo"},
+            {"key": "selfie_document", "label": "Selfie with the document", "ru": "Селфи с документом", "type": "photo"},
+        ],
+        "3": [
+            {"key": "full_name", "label": "Full name", "ru": "Имя и фамилия", "type": "text"},
+            {"key": "phone", "label": "Phone number", "ru": "Телефон", "type": "phone"},
+            {"key": "email", "label": "Email", "ru": "Почта", "type": "email"},
+            {"key": "document_number", "label": "Document number", "ru": "Номер документа", "type": "text"},
+            {"key": "birth_date", "label": "Date of birth, format DD.MM.YYYY", "ru": "Дата рождения", "type": "birth_date"},
+            {"key": "city", "label": "City", "ru": "Город", "type": "text"},
+            {"key": "bank", "label": "Preferred working method / bank", "ru": "Предпочтительный рабочий метод / банк", "type": "text"},
+            {"key": "account_number", "label": "Account number of the working method", "ru": "Номер счёта рабочего метода", "type": "text"},
+            {"key": "document_photo", "label": "Photo of the document", "ru": "Фото документа", "type": "photo"},
+            {"key": "selfie_document", "label": "Selfie with the document", "ru": "Селфи с документом", "type": "photo"},
+        ],
+        "4": [
+            {"key": "full_name", "label": "Full name", "ru": "Имя и фамилия", "type": "text"},
+            {"key": "phone", "label": "Phone number", "ru": "Телефон", "type": "phone"},
+            {"key": "email", "label": "Email", "ru": "Почта", "type": "email"},
+            {"key": "offer", "label": "Brief description of the commercial offer", "ru": "Описание коммерческого предложения", "type": "text"},
+        ],
+    }
+}
+
+QUESTIONS["mn"] = {
+    "1": [
+        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и фамилия", "type": "text"},
+        {"key": "phone", "label": "شماره تلفن", "ru": "Телефон", "type": "phone"},
+        {"key": "email", "label": "ایمیل", "ru": "Почта", "type": "email"},
+        {"key": "traffic", "label": "کانال‌های ترافیک، در صورت وجود، مثلاً کانال تلگرام", "ru": "Каналы трафика", "type": "text"},
+    ],
+    "2": QUESTIONS["en"]["2"],
+    "3": QUESTIONS["en"]["3"],
+    "4": [
+        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и فامилия", "type": "text"},
+        {"key": "phone", "label": "شماره تلفن", "ru": "Телефон", "type": "phone"},
+        {"key": "email", "label": "ایمیل", "ru": "Почта", "type": "email"},
+        {"key": "offer", "label": "توضیح کوتاه پیشنهاد تجاری", "ru": "Описание коммерческого предложения", "type": "text"},
+    ],
+}
+
+
+def get_next_application_id():
+    current = 0
+
+    if os.path.exists(COUNTER_FILE):
+        with open(COUNTER_FILE, "r", encoding="utf-8") as file:
+            value = file.read().strip()
+            if value.isdigit():
+                current = int(value)
+
+    current += 1
+
+    with open(COUNTER_FILE, "w", encoding="utf-8") as file:
+        file.write(str(current))
+
+    return f"IR-2026-{current:04d}"
+
+
+def lang_keyboard():
+    return ReplyKeyboardMarkup(
+        [["English", "Монгол"]],
+        resize_keyboard=True,
+        one_time_keyboard=True,
+    )
+
+
+def options_keyboard(lang):
+    return ReplyKeyboardMarkup(
+        [
+            [f"1. {OPTIONS[lang]['1']}"],
+            [f"2. {OPTIONS[lang]['2']}"],
+            [f"3. {OPTIONS[lang]['3']}"],
+            [f"4. {OPTIONS[lang]['4']}"],
+            [BUTTON_CANCEL[lang]],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def step_keyboard(lang):
+    return ReplyKeyboardMarkup(
+        [[BUTTON_BACK[lang], BUTTON_CANCEL[lang]]],
+        resize_keyboard=True,
+    )
+
+
+def confirm_keyboard(lang):
+    return ReplyKeyboardMarkup(
+        [[BUTTON_SEND[lang]], [BUTTON_EDIT[lang]], [BUTTON_CANCEL[lang]]],
+        resize_keyboard=True,
+    )
+
+
+def extract_choice(text):
+    text = text.strip()
+    if text.startswith("1"):
+        return "1"
+    if text.startswith("2"):
+        return "2"
+    if text.startswith("3"):
+        return "3"
+    if text.startswith("4"):
+        return "4"
+    return None
+
+
+def is_valid_email(value):
+    return re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value) is not None
+
+
+def is_valid_phone(value):
+    return value.isdigit()
+
+
+def is_valid_birth_date(value):
+    try:
+        datetime.strptime(value, "%d.%m.%Y")
+        return True
+    except ValueError:
+        return False
+
+
+def validate_answer(question_type, value):
+    if question_type == "email":
+        return is_valid_email(value)
+    if question_type == "phone":
+        return is_valid_phone(value)
+    if question_type == "birth_date":
+        return is_valid_birth_date(value)
+    return True
+
+
+def get_validation_error(lang, question_type):
+    if question_type == "email":
+        return TEXTS[lang]["invalid_email"]
+    if question_type == "phone":
+        return TEXTS[lang]["invalid_phone"]
+    if question_type == "birth_date":
+        return TEXTS[lang]["invalid_birth"]
+    return None
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.clear()
+    await update.message.reply_text(
+        "Please choose your language / لطفاً زبان خود را انتخاب کنید:",
+        reply_markup=lang_keyboard(),
+    )
+    return LANG
+
+
+async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.strip().lower()
+    if "english" in text:
+        lang = "en"
+    elif "Монгол" in text or "farsi" in text or "persian" in text:
+        lang = "mn"
+    else:
+        await update.message.reply_text(
+            "Please choose English or Монгол.",
+            reply_markup=lang_keyboard(),
+        )
+        return LANG
+    context.user_data["lang"] = lang
+    await update.message.reply_text(
+        TEXTS[lang]["welcome"],
+        reply_markup=options_keyboard(lang),
+    )
+    return CHOOSING
+
+
+async def choose_option(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data["lang"]
+    text = update.message.text.strip()
+    if text == BUTTON_CANCEL[lang]:
+        return await cancel(update, context)
+    choice = extract_choice(text)
+    if not choice:
+        await update.message.reply_text(
+            TEXTS[lang]["invalid_choice"],
+            reply_markup=options_keyboard(lang),
+        )
+        return CHOOSING
+    context.user_data["choice"] = choice
+    context.user_data["answers"] = []
+    context.user_data["photos"] = []
+    context.user_data["question_index"] = 0
+    questions = QUESTIONS[lang][choice]
+    await update.message.reply_text(
+        f"{TEXTS[lang]['selected']} {OPTIONS[lang][choice]}\n\n"
+        f"{TEXTS[lang]['step_intro']}"
+    )
+    await send_current_question(update, context)
+    return ASKING
+
+
+async def send_current_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data["lang"]
+    choice = context.user_data["choice"]
+    index = context.user_data["question_index"]
+    questions = QUESTIONS[lang][choice]
+    question = questions[index]
+    if question["type"] == "photo":
+        text = f"{index + 1}/{len(questions)}. {TEXTS[lang]['send_photo']} {question['label']}"
+    else:
+        text = f"{index + 1}/{len(questions)}. {TEXTS[lang]['enter']} {question['label']}"
+    await update.message.reply_text(text, reply_markup=step_keyboard(lang))
+
+
+async def ask_next_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data["lang"]
+    text = update.message.text.strip() if update.message.text else ""
+    if text == BUTTON_CANCEL[lang]:
+        return await cancel(update, context)
+    if text == BUTTON_BACK[lang]:
+        if context.user_data["question_index"] == 0:
+            await update.message.reply_text(
+                TEXTS[lang]["welcome"],
+                reply_markup=options_keyboard(lang),
+            )
+            return CHOOSING
+        context.user_data["question_index"] -= 1
+        if context.user_data["answers"]:
+            removed_answer = context.user_data["answers"].pop()
+            if removed_answer.get("type") == "photo" and context.user_data["photos"]:
+                context.user_data["photos"].pop()
+        await send_current_question(update, context)
+        return ASKING
+    choice = context.user_data["choice"]
+    questions = QUESTIONS[lang][choice]
+    index = context.user_data["question_index"]
+    current_question = questions[index]
+    if current_question["type"] == "photo":
+        if not update.message.photo:
+            await update.message.reply_text(TEXTS[lang]["need_photo"])
+            return ASKING
+        photo_file_id = update.message.photo[-1].file_id
+        answer = {
+            "key": current_question["key"],
+            "label": current_question["label"],
+            "ru": current_question["ru"],
+            "type": "photo",
+            "value": "[PHOTO]",
+            "file_id": photo_file_id,
+        }
+        context.user_data["photos"].append(answer)
+        context.user_data["answers"].append(answer)
+    else:
+        if not update.message.text:
+            await update.message.reply_text(f"{TEXTS[lang]['enter']} {current_question['label']}")
+            return ASKING
+        value = update.message.text.strip()
+        if not validate_answer(current_question["type"], value):
+            await update.message.reply_text(get_validation_error(lang, current_question["type"]))
+            return ASKING
+        answer = {
+            "key": current_question["key"],
+            "label": current_question["label"],
+            "ru": current_question["ru"],
+            "type": current_question["type"],
+            "value": value,
+        }
+        context.user_data["answers"].append(answer)
+    context.user_data["question_index"] += 1
+    if context.user_data["question_index"] < len(questions):
+        await send_current_question(update, context)
+        return ASKING
+    await show_confirmation(update, context)
+    return CONFIRMING
+
+
+async def show_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data["lang"]
+    choice = context.user_data["choice"]
+    answers = context.user_data["answers"]
+    text = (
+        f"{TEXTS[lang]['confirm']}\n\n"
+        f"{TEXTS[lang]['selected']} {OPTIONS[lang][choice]}\n\n"
+    )
+    for answer in answers:
+        value = "Photo attached" if answer["type"] == "photo" else answer["value"]
+        text += f"{answer['label']}: {value}\n"
+    await update.message.reply_text(text, reply_markup=confirm_keyboard(lang))
+
+
+async def confirm_application(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data["lang"]
+    text = update.message.text.strip()
+    if text == BUTTON_CANCEL[lang]:
+        return await cancel(update, context)
+    if text == BUTTON_EDIT[lang]:
+        context.user_data["answers"] = []
+        context.user_data["photos"] = []
+        context.user_data["question_index"] = 0
+        await update.message.reply_text(TEXTS[lang]["edited"])
+        await send_current_question(update, context)
+        return ASKING
+    if text != BUTTON_SEND[lang]:
+        await update.message.reply_text(TEXTS[lang]["confirm"], reply_markup=confirm_keyboard(lang))
+        return CONFIRMING
+    await send_application_to_admin(update, context)
+    return ConversationHandler.END
+
+
+async def send_application_to_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    application_id = get_next_application_id()
+    lang = context.user_data["lang"]
+    choice = context.user_data["choice"]
+    answers = context.user_data["answers"]
+    photos = context.user_data["photos"]
+    user = update.effective_user
+    username = f"@{user.username}" if user.username else "username отсутствует"
+    admin_text = (
+        f"Новая заявка: {application_id}\n\n"
+        f"Направление: {OPTIONS_RU[choice]}\n"
+        f"Язык пользователя: {'English' if lang == 'en' else 'Монгол'}\n\n"
+        f"Telegram username: {username}\n"
+        f"Telegram ID: {user.id}\n"
+        f"Имя в Telegram: {user.full_name}\n\n"
+        f"Данные заявки:\n"
+    )
+    for answer in answers:
+        if answer["type"] == "photo":
+            admin_text += f"{answer['ru']}: фото прикреплено ниже\n"
+        else:
+            admin_text += f"{answer['ru']}: {answer['value']}\n"
+    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_text)
+    for photo in photos:
+        await context.bot.send_photo(
+            chat_id=ADMIN_CHAT_ID,
+            photo=photo["file_id"],
+            caption=f"{application_id} — {photo['ru']}",
+        )
+    await update.message.reply_text(
+        f"{TEXTS[lang]['accepted']}\n\n"
+        f"Application ID: {application_id}\n\n"
+        f"{TEXTS[lang]['official']}"
+    )
+    context.user_data.clear()
+
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get("lang", "en")
+    context.user_data.clear()
+    await update.message.reply_text(TEXTS[lang]["cancelled"])
+    return ConversationHandler.END
+
+
+async def my_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(f"Your Telegram ID: {update.effective_user.id}")
+
+
+def main():
+    app = Application.builder().token(TOKEN).build()
+    conversation = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],
+        states={
+            LANG: [MessageHandler(filters.TEXT & ~filters.COMMAND, set_language)],
+            CHOOSING: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_option)],
+            ASKING: [MessageHandler((filters.TEXT | filters.PHOTO) & ~filters.COMMAND, ask_next_question)],
+            CONFIRMING: [MessageHandler(filters.TEXT & ~filters.COMMAND, confirm_application)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+    app.add_handler(CommandHandler("myid", my_id))
+    app.add_handler(conversation)
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
