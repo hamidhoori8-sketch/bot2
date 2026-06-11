@@ -45,7 +45,7 @@ TEXTS = {
         "welcome": (
             "Good day! We are glad to welcome you.\n\n"
             "Security warning: please do not send your personal data to anyone "
-            "except this bot and the official Telegram account @vzmlbet.\n\n"
+            "except this bot and the official Telegram account @admlbet. \n\n"
             "Please choose the type of cooperation using the buttons below "
             "or send a number in the chat:\n\n"
             "1. Affiliate partnership\n"
@@ -78,7 +78,7 @@ TEXTS = {
             "Өдрийн мэнд! Тавтай морилно уу.
 
 "
-            "Аюулгүй байдлын анхааруулга: хувийн мэдээллээ зөвхөн энэ бот болон албан ёсны Telegram хаяг @vzmlbet рүү илгээнэ үү.
+            "Аюулгүй байдлын анхааруулга: хувийн мэдээллээ зөвхөн энэ бот болон албан ёсны Telegram хаяг @admlbet рүү илгээнэ үү.
 
 "
             "Доорх товчлууруудаас хамтын ажиллагааны төрлөө сонгох эсвэл дугаарыг чат руу илгээнэ үү:
@@ -124,10 +124,10 @@ OPTIONS = {
         "4": "Other commercial offer",
     },
     "mn": {
-        "1": "همکاری افیلیت / جذب مشتری",
-        "2": "همکاری از طریق انتقال بانکی",
-        "3": "همکاری با TeamCash",
-        "4": "پیشنهاد تجاری دیگر",
+        "1": "Хамтрагч түншлэл",
+"2": "Банкны шилжүүлэгтэй хамтран ажиллах",
+"3": "TeamCash-тэй хамтран ажиллах",
+ "4": "Бусад арилжааны санал"
     },
 }
 
@@ -316,7 +316,7 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lang = "mn"
     else:
         await update.message.reply_text(
-            "Please choose English or Mongolian.",
+            "Please choose English or монгол.",
             reply_markup=lang_keyboard(),
         )
         return LANG
