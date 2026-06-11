@@ -1,0 +1,50 @@
+
+# ЗАМЕНИТЬ В ФАЙЛЕ
+
+# 1. Стартовое сообщение
+
+await update.message.reply_text(
+    "Please choose your language / Хэлээ сонгоно уу:",
+    reply_markup=lang_keyboard(),
+)
+
+# 2. Выбор языка
+
+async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.strip().lower()
+
+    if "english" in text:
+        lang = "en"
+    elif "монгол" in text or "mongol" in text:
+        lang = "mn"
+    else:
+        await update.message.reply_text(
+            "Please choose English or Mongolian.",
+            reply_markup=lang_keyboard(),
+        )
+        return LANG
+
+# 3. Кнопки
+
+BUTTON_BACK = {
+    "en": "Back",
+    "mn": "Буцах",
+}
+
+BUTTON_CANCEL = {
+    "en": "Cancel",
+    "mn": "Цуцлах",
+}
+
+BUTTON_SEND = {
+    "en": "Send application",
+    "mn": "Өргөдөл илгээх",
+}
+
+BUTTON_EDIT = {
+    "en": "Edit",
+    "mn": "Засах",
+}
+
+# 4. Полностью заменить TEXTS["mn"] на монгольский перевод.
+# Сейчас там используется фарси/дари.
