@@ -43,7 +43,7 @@ BUTTON_EDIT = {
 TEXTS = {
     "en": {
         "welcome": (
-            "Good day! We are glad to welcome you.\n\n"
+            "Good day! We are glad to welcome you.\n"
             "Security warning: please do not send your personal data to anyone "
             "except this bot and the official Telegram account @admlbet. \n\n"
             "Please choose the type of cooperation using the buttons below "
@@ -65,7 +65,7 @@ TEXTS = {
         "confirm": "Please check your application before sending:",
         "accepted": "Thank you! Your application has been received.",
         "official": (
-            "We will contact you from the Telegram account @vzmlbet to conclude cooperation.\n\n"
+            "We will contact you from the Telegram account @admlbet to conclude cooperation.\n\n"
             "This is the official account of the Melbet manager for Iran. "
             "Please do not reply to other suspicious persons to avoid fraud."
         ),
@@ -104,7 +104,7 @@ TEXTS = {
         "confirm": "Илгээхээсээ өмнө мэдээллээ шалгана уу:",
         "accepted": "Баярлалаа! Таны хүсэлтийг хүлээн авлаа.",
         "official": (
-            "Хамтын ажиллагааг үргэлжлүүлэхийн тулд бид @vzmlbet хаягаас холбогдох болно.
+            "Хамтын ажиллагааг үргэлжлүүлэхийн тулд бид @admlbet хаягаас холбогдох болно.
 
 "
             "Энэ бол Melbet-ийн албан ёсны менежерийн хаяг юм."
@@ -312,11 +312,11 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip().lower()
     if "english" in text:
         lang = "en"
-    elif text in ["монгол", "mongol", "mongolian"]:
+    elif text in "монгол":
         lang = "mn"
     else:
         await update.message.reply_text(
-            "Please choose English or монгол.",
+            "Please choose English or mongolian.",
             reply_markup=lang_keyboard(),
         )
         return LANG
