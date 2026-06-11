@@ -12,7 +12,7 @@ from telegram.ext import (
     filters,
 )
 
-TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+TOKEN = 8983948809:AAFFxkYjbXs7bZ752RJJ6q_FCpPt3LeHLRQ["TELEGRAM_BOT_TOKEN"]
 ADMIN_CHAT_ID = int(os.environ["ADMIN_CHAT_ID"])
 
 COUNTER_FILE = os.path.join(os.path.dirname(__file__), "application_counter.txt")
@@ -43,9 +43,9 @@ BUTTON_EDIT = {
 TEXTS = {
     "en": {
         "welcome": (
-            "Good day! We are glad to welcome you.\n\n"
+            "Good day! We are glad to welcome you.\n"
             "Security warning: please do not send your personal data to anyone "
-            "except this bot and the official Telegram account @vzmlbet.\n\n"
+            "except this bot and the official Telegram account @admlbet. \n\n"
             "Please choose the type of cooperation using the buttons below "
             "or send a number in the chat:\n\n"
             "1. Affiliate partnership\n"
@@ -65,44 +65,54 @@ TEXTS = {
         "confirm": "Please check your application before sending:",
         "accepted": "Thank you! Your application has been received.",
         "official": (
-            "We will contact you from the Telegram account @vzmlbet to conclude cooperation.\n\n"
+            "We will contact you from the Telegram account @admlbet to conclude cooperation.\n\n"
             "This is the official account of the Melbet manager for Iran. "
             "Please do not reply to other suspicious persons to avoid fraud."
         ),
         "cancelled": "Application cancelled. Press /start to begin again.",
         "edited": "Let's fill in the application again.",
     },
+    
     "mn": {
         "welcome": (
-            "روز بخیر! خوشحالیم که به ما پیوستید.\n\n"
-            "هشدار امنیتی: لطفاً اطلاعات شخصی خود را برای هیچ‌کس ارسال نکنید، "
-            "به‌جز این ربات و حساب رسمی تلگرام @vzmlbet.\n\n"
-            "لطفاً نوع همکاری مورد نظر خود را از طریق دکمه‌های زیر انتخاب کنید "
-            "یا عدد مربوطه را در چت ارسال کنید:\n\n"
-            "1. همکاری افیلیت / جذب مشتری\n"
-            "2. همکاری از طریق انتقال بانکی\n"
-            "3. همکاری با TeamCash\n"
-            "4. پیشنهاد تجاری دیگر"
+            "Өдрийн мэнд! Тавтай морилно уу.
+
+"
+            "Аюулгүй байдлын анхааруулга: хувийн мэдээллээ зөвхөн энэ бот болон албан ёсны Telegram хаяг @admlbet рүү илгээнэ үү.
+
+"
+            "Доорх товчлууруудаас хамтын ажиллагааны төрлөө сонгох эсвэл дугаарыг чат руу илгээнэ үү:
+
+"
+            "1. Түншлэлийн хамтын ажиллагаа
+"
+            "2. Bank Transfer хамтын ажиллагаа
+"
+            "3. TeamCash хамтын ажиллагаа
+"
+            "4. Бусад арилжааны санал"
         ),
-        "invalid_choice": "لطفاً یکی از گزینه‌های 1، 2، 3 یا 4 را انتخاب کنید.",
-        "selected": "شما انتخاب کردید:",
-        "step_intro": "چند سؤال را مرحله به مرحله از شما می‌پرسیم.",
-        "enter": "لطفاً وارد کنید:",
-        "send_photo": "لطفاً عکس را ارسال کنید:",
-        "need_photo": "لطفاً عکس ارسال کنید، نه متن.",
-        "invalid_email": "فرمت ایمیل نامعتبر است. لطفاً ایمیل معتبر وارد کنید.",
-        "invalid_phone": "فرمت شماره تلفن نامعتبر است. لطفاً فقط عدد وارد کنید.",
-        "invalid_birth": "تاریخ تولد نامعتبر است. لطفاً با فرمت DD.MM.YYYY وارد کنید.",
-        "confirm": "لطفاً درخواست خود را قبل از ارسال بررسی کنید:",
-        "accepted": "متشکریم! درخواست شما دریافت شد.",
+        "invalid_choice": "1, 2, 3 эсвэл 4 гэсэн сонголтоос сонгоно уу.",
+        "selected": "Та сонгосон:",
+        "step_intro": "Бид танд хэд хэдэн асуултыг дарааллаар нь асуух болно.",
+        "enter": "Оруулна уу:",
+        "send_photo": "Зураг илгээнэ үү:",
+        "need_photo": "Текст биш зураг илгээнэ үү.",
+        "invalid_email": "Имэйлийн формат буруу байна.",
+        "invalid_phone": "Утасны дугаарыг зөвхөн цифрээр оруулна уу.",
+        "invalid_birth": "Төрсөн огноог DD.MM.YYYY форматаар оруулна уу.",
+        "confirm": "Илгээхээсээ өмнө мэдээллээ шалгана уу:",
+        "accepted": "Баярлалаа! Таны хүсэлтийг хүлээн авлаа.",
         "official": (
-            "برای تکمیل همکاری، از طریق حساب تلگرام @vzmlbet با شما تماس خواهیم گرفت.\n\n"
-            "این حساب رسمی مدیر Melbet برای کشور ایران است. "
-            "لطفاً برای جلوگیری از کلاهبرداری به افراد مشکوک دیگر پاسخ ندهید."
+            "Хамтын ажиллагааг үргэлжлүүлэхийн тулд бид @admlbet хаягаас холбогдох болно.
+
+"
+            "Энэ бол Melbet-ийн албан ёсны менежерийн хаяг юм."
         ),
-        "cancelled": "درخواست Цуцлах شد. برای شروع دوباره /start را فشار دهید.",
-        "edited": "بیایید درخواست را دوباره تکمیل کنیم.",
+        "cancelled": "Хүсэлт цуцлагдлаа. Дахин эхлүүлэх бол /start дарна уу.",
+        "edited": "Маягтыг дахин бөглөе.",
     },
+
 }
 
 
@@ -114,10 +124,10 @@ OPTIONS = {
         "4": "Other commercial offer",
     },
     "mn": {
-        "1": "همکاری افیلیت / جذب مشتری",
-        "2": "همکاری از طریق انتقال بانکی",
-        "3": "همکاری با TeamCash",
-        "4": "پیشنهاد تجاری دیگر",
+        "1": "Хамтрагч түншлэл",
+"2": "Банкны шилжүүлэгтэй хамтран ажиллах",
+"3": "TeamCash-тэй хамтран ажиллах",
+ "4": "Бусад арилжааны санал"
     },
 }
 
@@ -292,7 +302,7 @@ def get_validation_error(lang, question_type):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
     await update.message.reply_text(
-        "Please choose your language / لطفاً زبان خود را انتخاب کنید:",
+        "Please choose your language / Хэлээ сонгоно уу:",
         reply_markup=lang_keyboard(),
     )
     return LANG
@@ -302,11 +312,11 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip().lower()
     if "english" in text:
         lang = "en"
-    elif "Монгол" in text or "farsi" in text or "persian" in text:
+    elif text in ["монгол", "mongol", "mongolian"]:
         lang = "mn"
     else:
         await update.message.reply_text(
-            "Please choose English or Монгол.",
+            "Please choose English or mongolian.",
             reply_markup=lang_keyboard(),
         )
         return LANG
@@ -518,3 +528,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+Найди ошибку, при нажатии выбора языка "Монгол", дальше ничего не происходит
