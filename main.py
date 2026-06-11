@@ -180,7 +180,7 @@ QUESTIONS["mn"] = {
     "2": QUESTIONS["en"]["2"],
     "3": QUESTIONS["en"]["3"],
     "4": [
-        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и فامилия", "type": "text"},
+        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и фамилия", "type": "text"},
         {"key": "phone", "label": "شماره تلفن", "ru": "Телефон", "type": "phone"},
         {"key": "email", "label": "ایمیل", "ru": "Почта", "type": "email"},
         {"key": "offer", "label": "توضیح کوتاه پیشنهاد تجاری", "ru": "Описание коммерческого предложения", "type": "text"},
