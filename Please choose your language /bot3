@@ -182,18 +182,18 @@ QUESTIONS = {
 
 QUESTIONS["mn"] = {
     "1": [
-        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и фамилия", "type": "text"},
-        {"key": "phone", "label": "شماره تلفن", "ru": "Телефон", "type": "phone"},
-        {"key": "email", "label": "ایمیل", "ru": "Почта", "type": "email"},
-        {"key": "traffic", "label": "کانال‌های ترافیک، در صورت وجود، مثلاً کانال تلگرام", "ru": "Каналы трафика", "type": "text"},
+        {"key": "full_name", "label": "Өөрийн болон овог нэр", "ru": "Имя и фамилия", "type": "text"},
+        {"key": "phone", "label": "Утасны дугаар", "ru": "Телефон", "type": "phone"},
+        {"key": "email", "label": "И-мэйл", "ru": "Почта", "type": "email"},
+        {"key": "traffic", "label": "Хэрэв байгаа бол урсгалын сувгууд, жишээ нь Telegram суваг", "ru": "Каналы трафика", "type": "text"},
     ],
     "2": QUESTIONS["en"]["2"],
     "3": QUESTIONS["en"]["3"],
     "4": [
-        {"key": "full_name", "label": "نام و نام خانوادگی", "ru": "Имя и فامилия", "type": "text"},
-        {"key": "phone", "label": "شماره تلفن", "ru": "Телефон", "type": "phone"},
-        {"key": "email", "label": "ایمیل", "ru": "Почта", "type": "email"},
-        {"key": "offer", "label": "توضیح کوتاه پیشنهاد تجاری", "ru": "Описание коммерческого предложения", "type": "text"},
+        {"key": "full_name", "label": "Өөрийн болон овог нэр", "ru": "Имя и فامилия", "type": "text"},
+        {"key": "phone", "label": "Утасны дугаар", "ru": "Телефон", "type": "phone"},
+        {"key": "email", "label": "И-мэйл", "ru": "Почта", "type": "email"},
+        {"key": "offer", "label": "Бизнесийн саналын товч тайлбар", "ru": "Описание коммерческого предложения", "type": "text"},
     ],
 }
 
